@@ -12,7 +12,7 @@ const FindUser = async () => {
     console.log("Session exists but no user data, redirecting to login");
     redirect("/login");
   }
-
+//   console.log(session)
   return session;
 };
 
