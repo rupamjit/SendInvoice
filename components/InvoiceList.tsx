@@ -10,10 +10,14 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "./ui/badge";
 import InvoiceAction from "./InvoiceAction";
+import GetInvoices from "@/hooks/GetInvoices";
+import FindUser from "@/hooks/FindUser";
+import { Invoice } from "@prisma/client";
 
+const InvoiceList = async () => {
+  const { user } = await FindUser();
+  const data = await GetInvoices(user?.id as string);
 
-
-const InvoiceList = () => {
   return (
     <Table>
       <TableCaption>A list of your recent invoices.</TableCaption>
@@ -28,18 +32,22 @@ const InvoiceList = () => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        <TableRow>
-          <TableCell>123</TableCell>
-          <TableCell>john doe</TableCell>
-          <TableCell>23424$</TableCell>
-          <TableCell>
-            <Badge>pending</Badge>
-          </TableCell>
-          <TableCell>03/08/2025</TableCell>
-          <TableCell className="text-right">
-            <InvoiceAction />
-          </TableCell>
-        </TableRow>
+        {data.map((invoice: Invoice) => (
+          <TableRow key={invoice.id}>
+            <TableCell>{invoice.invoiceNumber}</TableCell>
+            <TableCell>{invoice.clientName}</TableCell>
+            <TableCell>
+              {invoice.total} {invoice.currency}
+            </TableCell>
+            <TableCell>
+              <Badge>{invoice.status}</Badge>
+            </TableCell>
+            <TableCell>{invoice.date.getFullYear()}</TableCell>
+            <TableCell className="text-right">
+              <InvoiceAction invoiceId={invoice.id} status={invoice.status}/>
+            </TableCell>
+          </TableRow>
+        ))}
       </TableBody>
     </Table>
   );

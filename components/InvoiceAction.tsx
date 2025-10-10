@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-const InvoiceAction = () => {
+const InvoiceAction = ({invoiceId,status}:{invoiceId:string,status:string}) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -36,7 +36,7 @@ const InvoiceAction = () => {
       >
         <DropdownMenuItem asChild>
           <Link
-            href={`/dashboard/invoices/123`}
+            href={`/dashboard/invoices/${invoiceId}`}
             className="flex items-center px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/20 rounded-lg transition-colors duration-200 group"
           >
             <Edit className="mr-3 h-5 w-5 text-primary group-hover:text-primary/80 transition-colors duration-200" />
@@ -45,7 +45,7 @@ const InvoiceAction = () => {
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link
-            href={`/api/invoice/123`}
+            href={`/api/invoice/${invoiceId}`}
             target="_blank"
             className="flex items-center px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/20 rounded-lg transition-colors duration-200 group"
           >
@@ -57,17 +57,17 @@ const InvoiceAction = () => {
           <Mail className="mr-3 h-5 w-5 text-primary group-hover:text-primary/80 transition-colors duration-200" />
           <span className="font-medium">Send Reminder Email</span>
         </DropdownMenuItem>
-        {/* {status !== "PAID" && ( */}
+        {status !== "PAID" && (
         <DropdownMenuItem asChild>
           <Link
-            href={`/dashboard/invoices/123/paid`}
+            href={`/dashboard/invoices/${invoiceId}/paid`}
             className="flex items-center px-3 py-2 hover:bg-primary/10 dark:hover:bg-primary/20 rounded-lg transition-colors duration-200 group"
           >
             <CheckCircle className="mr-3 h-5 w-5 text-primary group-hover:text-primary/80 transition-colors duration-200" />
             <span className="font-medium">Mark as Paid</span>
           </Link>
         </DropdownMenuItem>
-        {/* )} */}
+        )} 
         <DropdownMenuSeparator className="my-1 opacity-50" />
         <DropdownMenuItem asChild>
           <Link
