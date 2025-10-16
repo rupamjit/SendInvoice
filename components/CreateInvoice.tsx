@@ -46,7 +46,7 @@ export const currencies = [
   { value: "JPY", label: "Japanese Yen -- JPY" },
 ];
 
-const formatCurrency = (amount: number, currency: string) => {
+export const formatCurrency = (amount: number, currency: string) => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: currency || "USD",

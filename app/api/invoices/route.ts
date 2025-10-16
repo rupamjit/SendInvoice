@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
         <p>Hello ${validatedData.clientName},</p>
         <p>This is a notification that you have received invoice #${validatedData.invoiceNumber} for <strong>${totalAmount}</strong>.</p>
         <p><strong>Due Date:</strong> ${formattedDueDate}</p>
-        <p>You can view and pay your invoice by clicking the link below:</p>
+        <p>You can view your invoice by clicking the link below:</p>
         <a href="${invoiceLink}">View Invoice</a>
         <br/>
         <p>Thank you!</p>
@@ -168,3 +168,5 @@ export async function PATCH(request:Request){
     );
   }
 }
+
+
