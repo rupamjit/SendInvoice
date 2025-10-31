@@ -1,23 +1,48 @@
 // app/auth/error/page.tsx
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { AlertCircle } from "lucide-react";
+"use client";
 
-export default function AuthErrorPage({
-  searchParams,
-}: {
-  searchParams: { error?: string };
-}) {
-  const errorMessages: Record<string, string> = {
-    Configuration: "There is a problem with the server configuration.",
-    AccessDenied: "You do not have permission to sign in.",
-    Verification: "The sign in link is no longer valid. It may have been used already or expired.",
-    Default: "An error occurred during authentication.",
+import { useSearchParams, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+export default function AuthErrorPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
+
+  const errorMessages: Record<string, { title: string; description: string }> = {
+    Callback: {
+      title: "Invalid Link",
+      description: "The sign-in link has expired or is invalid.",
+    },
+    EmailSignInError: {
+      title: "Email Error",
+      description: "Failed to send verification email.",
+    },
+    SessionCallback: {
+      title: "Session Error",
+      description: "An error occurred with your session.",
+    },
+    Configuration: {
+      title: "Configuration Error",
+      description: "Server configuration issue. Try again later.",
+    },
+    Verification: {
+      title: "Verification Failed",
+      description: "The verification link is invalid or expired.",
+    },
   };
 
-  const error = searchParams.error || "Default";
-  const errorMessage = errorMessages[error] || errorMessages.Default;
+  const errorInfo = errorMessages[error || ""] || {
+    title: "Sign In Error",
+    description: "An error occurred. Please try again.",
+  };
 
   return (
     <>
@@ -28,25 +53,46 @@ export default function AuthErrorPage({
       <div className="h-screen flex items-center justify-center px-4">
         <Card className="md:w-[40%] lg:w-[25%] w-[80%]">
           <CardHeader>
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-destructive" />
-              <CardTitle className="text-2xl">Authentication Error</CardTitle>
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-8 h-8 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </div>
             </div>
-            <CardDescription>
-              {errorMessage}
+            <CardTitle className="text-2xl text-center">
+              {errorInfo.title}
+            </CardTitle>
+            <CardDescription className="text-center pt-2">
+              {errorInfo.description}
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-2">
-              <Button asChild>
-                <Link href="/login">
-                  Try Again
-                </Link>
-              </Button>
-              <p className="text-xs text-muted-foreground text-center mt-2">
-                Error code: {error}
-              </p>
-            </div>
+
+          <CardContent className="space-y-3">
+            <Button
+              onClick={() => router.push("/login")}
+              className="w-full"
+            >
+              Back to Login
+            </Button>
+
+            <Button
+              onClick={() => router.push("/")}
+              variant="outline"
+              className="w-full"
+            >
+              Go Home
+            </Button>
           </CardContent>
         </Card>
       </div>
