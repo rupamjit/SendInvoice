@@ -9,16 +9,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "@/utils/auth";
-
 import React from "react";
 
-const page = () => {
+const LoginPage = () => {
   return (
     <>
       <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:6rem_4rem]">
         <div className="absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_500px_at_50%_200px,#C9EBFF,transparent)]"></div>
       </div>
-      <div className="h-screen  flex items-center justify-center px-4">
+
+      <div className="h-screen flex items-center justify-center px-4">
         <Card className="md:w-[40%] lg:w-[25%] w-[80%]">
           <CardHeader>
             <CardTitle className="text-2xl">Login</CardTitle>
@@ -26,11 +26,12 @@ const page = () => {
               Enter your email to access your account.
             </CardDescription>
           </CardHeader>
+
           <CardContent>
             <form
               action={async (formData) => {
                 "use server";
-                await signIn("resend",formData);
+                await signIn("email", formData);
               }}
             >
               <div className="grid w-full items-center gap-4">
@@ -54,4 +55,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default LoginPage;

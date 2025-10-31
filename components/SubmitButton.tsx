@@ -15,32 +15,22 @@ interface ButtonTypes {
     | "destructive"
     | null
     | undefined;
+  disabled?: boolean;
 }
 
-const SubmitButton = ({ text, variant }: ButtonTypes) => {
+const SubmitButton = ({ text, variant, disabled }: ButtonTypes) => {
   const { pending } = useFormStatus();
 
   return (
-    <>
-      {pending ? (
-        <Button
-          disabled={pending}
-          className="w-full cursor-pointer"
-          variant={variant}
-        >
-          <Loader2 className="size-4 mr-2 animate-spin " />
-          Please Wait
-        </Button>
-      ) : (
-        <Button
-          type="submit"
-          className="w-full cursor-pointer"
-          variant={variant}
-        >
-          {text}
-        </Button>
-      )}
-    </>
+    <Button
+      type="submit"
+      disabled={pending || disabled} 
+      className="w-full cursor-pointer"
+      variant={variant}
+    >
+      {pending && <Loader2 className="size-4 mr-2 animate-spin" />}
+      {pending ? "Please Wait" : text}
+    </Button>
   );
 };
 
