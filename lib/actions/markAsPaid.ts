@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 const markAsPaid = async (id: string) => {
   const session = await FindUser();
-  const data = await db.invoice.update({
+  await db.invoice.update({
     where: {
       userId: session.user?.id,
       id: id,

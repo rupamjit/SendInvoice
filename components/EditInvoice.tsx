@@ -1,9 +1,8 @@
-// @ts-nocheck
 "use client";
 import React, { useEffect } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Badge } from "./ui/badge";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "./ui/form";
 import { Input } from "./ui/input";
@@ -21,7 +20,7 @@ import { Textarea } from "./ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { invoiceCreationSchema } from "@/types/createInvoice";
 import { useRouter } from "next/navigation";
-import z from "zod";
+import { z } from "zod";
 import { Invoice } from "@prisma/client";
 import { Calendar } from "./ui/calendar";
 import { format } from "date-fns";
@@ -43,10 +42,14 @@ const formatCurrency = (amount: number, currency: string) => {
   }).format(amount);
 };
 
+
+type InvoiceFormValues = z.infer<typeof invoiceCreationSchema>;
+
 const EditInvoice = ({ invoice }: { invoice: Invoice }) => {
-  type InvoiceFormValues = z.infer<typeof invoiceCreationSchema>;
   const router = useRouter();
-  const form = useForm<InvoiceFormValues>({
+  
+
+  const form = useForm({
     resolver: zodResolver(invoiceCreationSchema),
     defaultValues: {
       invoiceName: invoice.invoiceName,
@@ -60,18 +63,18 @@ const EditInvoice = ({ invoice }: { invoice: Invoice }) => {
       invoiceItemDescription: invoice.invoiceItemDescription,
       invoiceItemQuantity: invoice.invoiceItemQuantity || 1,
       invoiceItemRate: invoice.invoiceItemRate || 0,
-      note: invoice.note,
+      note: invoice.note || "",
       currency: invoice.currency || "USD",
       date: new Date(invoice.date),
       dueDate: invoice.dueDate || 0,
       total: invoice.total || 0,
     },
-  });
+  }) as ReturnType<typeof useForm<InvoiceFormValues>>;
 
-  const [quantity, rate, currency] = useWatch({
-    control: form.control,
-    name: ["invoiceItemQuantity", "invoiceItemRate", "currency"],
-  });
+
+  const quantity = form.watch("invoiceItemQuantity");
+  const rate = form.watch("invoiceItemRate");
+  const currency = form.watch("currency");
 
   const subtotal = (quantity || 0) * (rate || 0);
 
@@ -79,21 +82,29 @@ const EditInvoice = ({ invoice }: { invoice: Invoice }) => {
     form.setValue("total", subtotal);
   }, [subtotal, form]);
 
-    async function onSubmit(values: InvoiceFormValues) {
-        const data = {
-            ...values,
-            id:invoice.id
-        }
-        console.log(data);
-        const response = await axios.patch("/api/invoices",data)
-        // console.log(response)
-        if(response.status == 201){
-          toast("invoice updated sucesfully",{cancel:true,position:"top-center"})
-        router.push("/dashboard/invoices")
-        }else{
-          toast("Internal Server Error",{cancel:true})
-        }
+  async function onSubmit(values: InvoiceFormValues) {
+    try {
+      // Convert date to ISO string
+      const data = {
+        ...values,
+        date: values.date.toISOString(),
+        id: invoice.id,
+      };
+
+      const response = await axios.patch("/api/invoices", data);
+
+      if (response.status === 200 || response.status === 201) {
+        toast.success("Invoice updated successfully", {
+          position: "top-center",
+        });
+        router.push("/dashboard/invoices");
+      }
+    } catch {
+      toast.error("Failed to update invoice", {
+        description: "Please try again later",
+      });
     }
+  }
 
   return (
     <div>
@@ -103,7 +114,6 @@ const EditInvoice = ({ invoice }: { invoice: Invoice }) => {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
                 {/* Invoice Name */}
-
                 <div className="flex flex-col gap-1 w-fit mb-6">
                   <div className="flex items-center gap-4">
                     <Badge variant="default">Draft</Badge>
@@ -137,8 +147,10 @@ const EditInvoice = ({ invoice }: { invoice: Invoice }) => {
                             </span>
                             <Input
                               className="rounded-l-none"
+                              type="number"
                               placeholder="101"
-                              {...field}
+                              value={field.value}
+                              onChange={(e) => field.onChange(e.target.value)}
                             />
                           </div>
                         </FormControl>
@@ -177,7 +189,6 @@ const EditInvoice = ({ invoice }: { invoice: Invoice }) => {
 
                 {/* From and To sections */}
                 <div className="grid md:grid-cols-2 gap-8 mb-6">
-                  {/* FIX: Added the 'From' FormFields */}
                   <div className="space-y-3">
                     <Label className="font-semibold text-base">From</Label>
                     <FormField
@@ -303,7 +314,7 @@ const EditInvoice = ({ invoice }: { invoice: Invoice }) => {
                         <Label>Due Date</Label>
                         <Select
                           onValueChange={field.onChange}
-                          defaultValue={String(field.value)}
+                          value={String(field.value)}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -355,7 +366,12 @@ const EditInvoice = ({ invoice }: { invoice: Invoice }) => {
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Input type="number" placeholder="1" {...field} />
+                              <Input
+                                type="number"
+                                placeholder="1"
+                                value={field.value}
+                                onChange={(e) => field.onChange(e.target.value)}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -371,8 +387,10 @@ const EditInvoice = ({ invoice }: { invoice: Invoice }) => {
                             <FormControl>
                               <Input
                                 type="number"
+                                step="0.01"
                                 placeholder="100.00"
-                                {...field}
+                                value={field.value}
+                                onChange={(e) => field.onChange(e.target.value)}
                               />
                             </FormControl>
                             <FormMessage />
@@ -425,7 +443,6 @@ const EditInvoice = ({ invoice }: { invoice: Invoice }) => {
                 {/* Submit Button */}
                 <div className="flex items-center justify-end mt-6">
                   <Button
-                    className="cursor-pointer"
                     type="submit"
                     size="lg"
                     disabled={form.formState.isSubmitting}

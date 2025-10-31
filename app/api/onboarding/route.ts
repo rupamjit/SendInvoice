@@ -9,7 +9,7 @@ const formSchema = z.object({
   address: z.string(),
 });
 
-export const POST = async (req: NextRequest, res: NextResponse) => {
+export const POST = async (req: NextRequest) => {
   const requestData = await req.json();
   const userData = await FindUser();
 

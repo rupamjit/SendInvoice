@@ -44,7 +44,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await FindUser();
-  const data = await getUser(session.user?.id as string);
+   await getUser(session.user?.id as string);
 
   return (
     <>
