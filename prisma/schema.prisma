@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client-js"
@@ -13,23 +8,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id            String    @id @default(cuid())
-  firstName     String?
-  lastName      String?
-  address       String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  Invoice   Invoice[]
-}
-
 model Account {
+  id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
@@ -45,12 +25,14 @@ model Account {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation("accounts", fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id([provider, providerAccountId])
+  @@unique([provider, providerAccountId])
 }
 
+
 model Session {
+  id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
   expires      DateTime
@@ -60,41 +42,64 @@ model Session {
   updatedAt DateTime @updatedAt
 }
 
-model Invoice {
-  id String @id @default(uuid())
-
-  invoiceName   String
-  total         Int
-  status        InvoiceStatus
-  date          DateTime
-  dueDate       Int
-  fromName      String
-  fromEmail     String
-  fromAddress   String
-  clientName    String
-  clientEmail   String
-  clientAddress String
-  currency      String
-  invoiceNumber Int
-  note          String?
-
-  invoiceItemDescription String
-  invoiceItemQuantity    Int
-  invoiceItemRate        Int
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  User   User?   @relation(fields: [userId], references: [id])
-  userId String?
-}
 
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
 
-  @@id([identifier, token])
+  @@unique([identifier, token])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  firstName     String?
+  lastName      String?
+  address       String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  
+  accounts Account[] @relation("accounts")
+  sessions Session[]
+  invoices Invoice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Invoice {
+  id String @id @default(uuid())
+
+  invoiceName   String
+  total         Float 
+  status        InvoiceStatus @default(PENDING)
+  date          DateTime
+  dueDate       Int
+  
+  fromName      String
+  fromEmail     String
+  fromAddress   String
+  
+  clientName    String
+  clientEmail   String
+  clientAddress String
+  
+  currency      String @default("USD")
+  invoiceNumber Int
+  note          String?
+
+  invoiceItemDescription String
+  invoiceItemQuantity    Int
+  invoiceItemRate        Float 
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 enum InvoiceStatus {
