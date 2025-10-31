@@ -1,7 +1,5 @@
-import { MailtrapClient } from "mailtrap";
+import { Resend } from 'resend';
 
-const emailClient = new MailtrapClient({
-    token: process.env.MAILTRAP_API_TOKEN!,
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-export default emailClient;
+export default resend;
