@@ -1,37 +1,3 @@
-// import Nodemailer from "next-auth/providers/nodemailer";
-// import NextAuth from "next-auth";
-// import { PrismaAdapter } from "@auth/prisma-adapter";
-// import { db } from "./db";
-
-// export const { handlers, signIn, signOut, auth } = NextAuth({
-//   adapter: PrismaAdapter(db),
-//   providers: [
-//     Nodemailer({
-//       server: {
-//         secure: false,
-//         host: process.env.EMAIL_SERVER_HOST,
-//         port: Number(process.env.EMAIL_SERVER_PORT),
-//         auth: {
-//           user: process.env.EMAIL_SERVER_USER,
-//           pass: process.env.EMAIL_SERVER_PASSWORD,
-//         },
-//       },
-//       from: process.env.EMAIL_FROM,
-//     }),
-//   ],
-//   pages: {
-//     verifyRequest: "/verify",
-//   },
-//   callbacks: {
-//     async redirect({ url, baseUrl }) {
-//       // Always send to dashboard after login
-//       return `${baseUrl}/dashboard`;
-//     },
-//   },
-// });
-
-
-// auth.ts
 import NextAuth from "next-auth";
 import Email from "next-auth/providers/email";
 import { PrismaAdapter } from "@auth/prisma-adapter";
@@ -43,7 +9,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(db),
   
-  // ✅ Vercel settings
+
   trustHost: true,
   useSecureCookies: true,
   
@@ -65,7 +31,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       from: process.env.EMAIL_FROM || "noreply@yourdomain.com",
       
-      // ✅ Custom email template
+
       async sendVerificationRequest({
         identifier: email,
         url,
