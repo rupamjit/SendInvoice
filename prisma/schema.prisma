@@ -30,7 +30,6 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
-
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique

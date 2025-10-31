@@ -4,23 +4,10 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "@/utils/db";
 import { Resend } from "resend";
 
-if (!process.env.NEXTAUTH_SECRET) {
-  throw new Error("NEXTAUTH_SECRET is not set");
-}
-
-if (!process.env.NEXTAUTH_URL) {
-  throw new Error("NEXTAUTH_URL is not set");
-}
-
-if (!process.env.RESEND_API_KEY) {
-  throw new Error("RESEND_API_KEY is not set");
-}
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || "");
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(db),
-  
   
   trustHost: true,
   useSecureCookies: process.env.NODE_ENV === "production",
@@ -29,7 +16,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
     strategy: "database",
     maxAge: 30 * 24 * 60 * 60,
-    updateAge: 24 * 60 * 60,
   },
   
   providers: [
@@ -40,7 +26,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         secure: true,
         auth: {
           user: "resend",
-          pass: process.env.RESEND_API_KEY,
+          pass: process.env.RESEND_API_KEY || "",
         },
       },
       from: process.env.EMAIL_FROM || "onboarding@resend.dev",
@@ -54,8 +40,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         try {
           const { host } = new URL(url);
           
-          console.log("📧 Sending email to:", email);
-          console.log("🔗 Link:", url);
+          console.log("📧 Email sent to:", email);
+          console.log("🔗 Callback URL:", url);
           
           const { error } = await resend.emails.send({
             from: from || "onboarding@resend.dev",
@@ -64,14 +50,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             html: `
               <!DOCTYPE html>
               <html>
-              <head>
-                <meta charset="UTF-8">
-              </head>
-              <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f4f4f4;">
+              <body style="font-family: Arial; margin: 0; padding: 20px; background: #f4f4f4;">
                 <div style="max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px;">
-                  <h1 style="color: #667eea; margin-top: 0;">Sign in to Invoice Platform</h1>
+                  <h1 style="color: #667eea;">Sign in to Invoice Platform</h1>
                   
-                  <p style="color: #666; font-size: 16px; line-height: 1.6;">
+                  <p style="color: #666; font-size: 16px;">
                     Click below to sign in. This link expires in 24 hours.
                   </p>
                   
@@ -89,6 +72,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     </a>
                   </div>
                   
+                  <p style="color: #999; font-size: 14px;">
+                    Or copy and paste this link:<br/>
+                    <code style="word-break: break-all; font-size: 12px;">
+                      ${url}
+                    </code>
+                  </p>
+                  
+                  <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+                  
                   <p style="color: #999; font-size: 12px;">
                     If you didn't request this, ignore this email.
                   </p>
@@ -99,13 +91,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           });
           
           if (error) {
-            console.error("❌ Resend error:", error);
-            throw new Error(`Resend error: ${error.message}`);
+            throw new Error(`Resend: ${error.message}`);
           }
           
-          console.log("✅ Email sent");
+          console.log("✅ Email sent successfully");
         } catch (error) {
-          console.error("❌ Failed:", error);
+          console.error("❌ Email failed:", error);
           throw error;
         }
       },
@@ -119,13 +110,50 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   
   callbacks: {
+    // ✅ Redirect to dashboard after verification
     async redirect({ url, baseUrl }) {
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      if (new URL(url).origin === baseUrl) return url;
+      console.log("🔄 Redirect callback:", { url, baseUrl });
+      
+      // If url starts with /, it's an internal path - allow it
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+      
+      // If it's same origin, allow it
+      if (new URL(url).origin === baseUrl) {
+        return url;
+      }
+      
+      // ✅ Default: always go to dashboard after login
       return `${baseUrl}/dashboard`;
+    },
+    
+    async signIn({ user, account, email, profile }) {
+      console.log("✅ Sign in successful for:", user?.email);
+      return true;
+    },
+    
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user.id = token.id as string;
+      }
+      return session;
     },
   },
   
-  debug: process.env.NODE_ENV === "development",
+  events: {
+    async signIn({ user }) {
+      console.log("👤 User signed in:", user?.email);
+    },
+  },
+  
+  debug: true,
 });
 
