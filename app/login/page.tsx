@@ -30,7 +30,7 @@ const page = () => {
             <form
               action={async (formData) => {
                 "use server";
-                await signIn("nodemailer",formData);
+                await signIn("resend",formData);
               }}
             >
               <div className="grid w-full items-center gap-4">
