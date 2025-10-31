@@ -46,12 +46,6 @@ export const currencies = [
   { value: "JPY", label: "Japanese Yen -- JPY" },
 ];
 
-export const formatCurrency = (amount: number, currency: string) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency || "USD",
-  }).format(amount);
-};
 
 const CreateInvoice = () => {
   type InvoiceFormValues = z.infer<typeof invoiceCreationSchema>;
