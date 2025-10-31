@@ -24,6 +24,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   
   trustHost: true,
   useSecureCookies: process.env.NODE_ENV === "production",
+  basePath: "/api/auth",
   
   session: {
     strategy: "database",
