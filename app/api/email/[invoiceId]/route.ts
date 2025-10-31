@@ -3,6 +3,9 @@ import { db } from "@/utils/db";
 import emailClient from "@/utils/emailClient";
 import { NextResponse } from "next/server";
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ invoiceId: string }> }
