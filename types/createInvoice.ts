@@ -1,7 +1,4 @@
-
-
 import z from "zod";
-
 export const invoiceCreationSchema = z.object({
   invoiceName: z.string().min(1, "Invoice Name is required"),
   total: z.number().min(0), // Can be 0 initially
